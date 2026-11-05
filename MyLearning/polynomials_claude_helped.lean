@@ -42,6 +42,10 @@ theorem eulerOp_monomial (k : ℕ) :
     rw [Nat.add_sub_cancel, pow_succ, C_eq_natCast, nsmul_eq_mul]
     ring
 
+
+-- step 2, general case
+-- Helper: Evaluate a polynomial f at the linear operator θ, then apply it to u
+
 -- θ^n X^k = k^n • X^k
 theorem euler_monomial (n k : ℕ) :
     opSeries n (X ^ k : R[X]) = k ^ n • (X ^ k : R[X]) := by
@@ -50,3 +54,14 @@ theorem euler_monomial (n k : ℕ) :
   | succ n ih =>
     simp only [opSeries, Function.comp_apply]
     rw [ih, eulerOp_nsmul, eulerOp_monomial, smul_smul, pow_succ]
+
+
+noncomputable def polyEulerOp (f : R[X]) (u : R[X]) : R[X] :=
+  f.sum (fun n coeff => coeff • opSeries n u)
+
+theorem polyEulerOp_monomial (f : R[X]) (k : ℕ) :
+    polyEulerOp f (X ^ k : R[X]) = f.eval (k : R) • (X ^ k : R[X]) := by
+  unfold polyEulerOp
+  rw [Polynomial.eval_eq_sum, Polynomial.sum, Polynomial.sum, Finset.sum_smul]
+  refine Finset.sum_congr rfl fun n _ => ?_
+  rw [euler_monomial, ← Nat.cast_smul_eq_nsmul R, smul_smul, Nat.cast_pow]
